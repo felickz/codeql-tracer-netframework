@@ -55,15 +55,23 @@ runs:
       shell: pwsh
       run: | 
         # Output the env variable to the action env variables for use during codeql init step
-        "CODEQL_ACTION_EXTRA_OPTIONS = {`"database`":{`"init`":[`"--extra-tracing-config`", `"$(${env:RUNNER_TEMP} -replace '\\', '\\')\\config.lua`" ]}}" >> $env:GITHUB_ENV
-        
-        Write-Host "var set `$env:GITHUB_ENV: $env:GITHUB_ENV"
+        "CODEQL_ACTION_EXTRA_OPTIONS={`"database`":{`"init`":[`"--extra-tracing-config`", `"$(${env:RUNNER_TEMP} -replace '\\', '\\')\\config.lua`" ]}}" >> $env:GITHUB_ENV
 
-        #$env:CODEQL_ACTION_EXTRA_OPTIONS = "{`"database`":{`"init`":[`"--extra-tracing-config`", `"$(${env:RUNNER_TEMP} -replace '\\', '\\')\\config.lua`" ]}}"
-        #Write-Host "var set `$env:CODEQL_ACTION_EXTRA_OPTIONS: $env:CODEQL_ACTION_EXTRA_OPTIONS"
+        # PS Env variable is not used by further steps, so commented it here for debugging
+        #$env:CODEQL_ACTION_EXTRA_OPTIONS = "{`"database`":{`"init`":[`"--extra-tracing-config`", `"$(${env:RUNNER_TEMP} -replace '\\', '\\')\\config.lua`" ]}}"              
 
+    - name: Dump Lua Script
+      shell: pwsh
+      run: |
         Write-Host "${env:RUNNER_TEMP}\config.lua contents:"
         Get-Content "${env:RUNNER_TEMP}\config.lua"
+    - name: Dump Env Variables
+      shell: pwsh
+      run: |
+        Write-Host "Reading content from `$env:GITHUB_ENV: $env:GITHUB_ENV"
+        Get-Content $env:GITHUB_ENV
+        
+        Write-Host "var set `$env:CODEQL_ACTION_EXTRA_OPTIONS: $env:CODEQL_ACTION_EXTRA_OPTIONS"
 branding:
   icon: "lock"
   color: "gray-dark"
