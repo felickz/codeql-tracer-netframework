@@ -3,17 +3,17 @@ author: "@felickz"
 description: 'Generates a custom tracing configuration for ASP.NET to remove MVCBuildViews and other CodeQL default compiler options.'
 inputs:
   MvcBuildViews:
-    description: 'A boolean to remove MvcBuildViews=true compiler flag. Default is false.'
+    description: 'A boolean to use MvcBuildViews=true compiler flag. Default is true.'
     required: false
-    default: 'false'
+    default: 'true'
   EmitCompilerGeneratedFiles:
-    description: 'A boolean to remove EmitCompilerGeneratedFiles=true compiler flag. Default is false.'
+    description: 'A boolean to use EmitCompilerGeneratedFiles=true compiler flag. Default is true.'
     required: false
-    default: 'false'
+    default: 'true'
   DisableUseSharedCompilation:
-    description: 'A boolean to remove the UseSharedCompilation=false default compiler flag. Default is false.'
+    description: 'A boolean to use the UseSharedCompilation=false compiler flag. Default is true.'
     required: false
-    default: 'false'
+    default: 'true'
 runs:
     using: composite
     steps:
@@ -39,9 +39,9 @@ runs:
                                         compilerPath,
                                         compilerArguments,
                                         nil, {                                        
-                                        $( ('${{ inputs.DisableUseSharedCompilation }}' -eq 'false') ? `"'/p:UseSharedCompilation=false',`" : `"`" )
-                                        $( ('${{ inputs.MvcBuildViews }}' -eq 'false') ? `"'/p:MvcBuildViews=true',`" : `"`" )
-                                        $( ('${{ inputs.EmitCompilerGeneratedFiles }}' -eq 'false') ? `"'/p:EmitCompilerGeneratedFiles=true',`" : `"`" )
+                                        $( ('${{ inputs.DisableUseSharedCompilation }}' -eq 'true') ? `"'/p:UseSharedCompilation=false',`" : `"`" )
+                                        $( ('${{ inputs.MvcBuildViews }}' -eq 'true') ? `"'/p:MvcBuildViews=true',`" : `"`" )
+                                        $( ('${{ inputs.EmitCompilerGeneratedFiles }}' -eq 'true') ? `"'/p:EmitCompilerGeneratedFiles=true',`" : `"`" )
                                     })
 
                                 }
