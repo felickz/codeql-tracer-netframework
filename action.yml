@@ -88,7 +88,7 @@ runs:
             Install-Module -Name GitHubActions
         }
 
-        $message = "Overriding the default CodeQL Csharp Tracer configuration can increase the potential for false negatives in security analysis. See [documentation](https://github.com/felickz/codeql-tracer-netframework/blob/main/README.md)"
+        $message = "Overriding the default CodeQL Csharp Tracer configuration can increase the potential for false negatives in security analysis. See https://github.com/felickz/codeql-tracer-netframework/blob/main/README.md"
 
         Write-ActionWarning -Message $message
         
