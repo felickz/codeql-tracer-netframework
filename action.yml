@@ -51,27 +51,47 @@ runs:
                     }
                 }
             end" > "${env:RUNNER_TEMP}\config.lua"
+    # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable            
     - name: Set Env Variable
       shell: pwsh
       run: | 
         # Output the env variable to the action env variables for use during codeql init step
         "CODEQL_ACTION_EXTRA_OPTIONS={`"database`":{`"init`":[`"--extra-tracing-config`", `"$(${env:RUNNER_TEMP} -replace '\\', '\\')\\config.lua`" ]}}" >> $env:GITHUB_ENV
-
-        # PS Env variable is not used by further steps, so commented it here for debugging
-        #$env:CODEQL_ACTION_EXTRA_OPTIONS = "{`"database`":{`"init`":[`"--extra-tracing-config`", `"$(${env:RUNNER_TEMP} -replace '\\', '\\')\\config.lua`" ]}}"              
-
-    - name: Dump Lua Script
+    - name: Debug Lua Script
+      if:  runner.debug == '1'
       shell: pwsh
       run: |
         Write-Host "${env:RUNNER_TEMP}\config.lua contents:"
         Get-Content "${env:RUNNER_TEMP}\config.lua"
-    - name: Dump Env Variables
+    - name: Debug Env Variables
+      if:  runner.debug == '1'
       shell: pwsh
       run: |
         Write-Host "Reading content from `$env:GITHUB_ENV: $env:GITHUB_ENV"
         Get-Content $env:GITHUB_ENV
         
         Write-Host "var set `$env:CODEQL_ACTION_EXTRA_OPTIONS: $env:CODEQL_ACTION_EXTRA_OPTIONS"
+    - name: Output Actions Warnings
+      if:  inputs.DisableUseSharedCompilation != true || inputs.MvcBuildViews != true || inputs.EmitCompilerGeneratedFiles != true
+      shell: pwsh
+      run: | 
+        # Handle `Untrusted repository` prompt
+        Set-PSRepository PSGallery -InstallationPolicy Trusted
+
+        #check if GitHubActions module is installed
+        if (Get-Module -ListAvailable -Name GitHubActions -ErrorAction SilentlyContinue) {
+            Write-ActionDebug "GitHubActions module is installed"
+        }
+        else {
+            #directly to output here before module loaded to support Write-ActionInfo
+            Write-Output "GitHubActions module is not installed.  Installing from Gallery..."
+            Install-Module -Name GitHubActions
+        }
+
+        $message = "Overriding the default CodeQL Csharp Tracer configuration can increase the potential for false negatives in security analysis. See [documentation](https://github.com/felickz/codeql-tracer-netframework/blob/main/README.md)"
+
+        Write-ActionWarning -Message $message
+        
 branding:
   icon: "lock"
   color: "gray-dark"
