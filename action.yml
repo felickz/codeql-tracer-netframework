@@ -56,7 +56,7 @@ runs:
       run: | 
         $env:CODEQL_ACTION_EXTRA_OPTIONS = "`"{`"database`":{`"init`":[`"--extra-tracing-config`", `"${env:RUNNER_TEMP}\config.lua`" ]}}"
         Write-Host "var set `$env:CODEQL_ACTION_EXTRA_OPTIONS: $env:CODEQL_ACTION_EXTRA_OPTIONS"
-        Write-Host "config.lua contents:"
+        Write-Host "${env:RUNNER_TEMP}\config.lua contents:"
         Get-Content "${env:RUNNER_TEMP}\config.lua"
 branding:
   icon: "lock"
