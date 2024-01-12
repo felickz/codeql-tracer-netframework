@@ -1,0 +1,63 @@
+name: 'CodeQL Enhanced Tracer for .NET Framework'
+author: "@felickz"
+description: 'Generates a custom tracing configuration for ASP.NET to remove MVCBuildViews and other CodeQL default compiler options.'
+inputs:
+  MvcBuildViews:
+    description: 'A boolean to remove MvcBuildViews=true compiler flag. Default is false.'
+    required: false
+    default: 'false'
+  EmitCompilerGeneratedFiles:
+    description: 'A boolean to remove EmitCompilerGeneratedFiles=true compiler flag. Default is false.'
+    required: false
+    default: 'false'
+  DisableUseSharedCompilation:
+    description: 'A boolean to remove the UseSharedCompilation=false default compiler flag. Default is false.'
+    required: false
+    default: 'false'
+runs:
+    using: composite
+    steps:
+    - name: Write Lua script
+      shell: pwsh
+      run: | 
+        echo "function GetCompatibleVersions() return {'1.0.0'} end
+            table.unpack = table.unpack or unpack -- 5.1 compatibility
+            function Exify(path)
+                if OperatingSystem == 'windows' then return path .. '.exe' else return path end
+            end
+            function RegisterExtraConfig()
+                return {
+                    ['csharp'] = {
+                        function(compilerName, compilerPath, compilerArguments, languageId)
+                            if MatchCompilerName('^' .. Exify('msbuild') .. '$', compilerName, compilerPath,
+                                compilerArguments) or
+                                MatchCompilerName('^' .. Exify('xbuild') .. '$', compilerName, compilerPath,
+                                    compilerArguments) then
+                                return {
+                                    order = ORDER_REPLACE,
+                                    invocation = BuildExtractorInvocation(languageId, compilerPath,
+                                        compilerPath,
+                                        compilerArguments,
+                                        nil, {                                        
+                                        $( (${{ inputs.DisableUseSharedCompilation } -eq 'false') ? `"'/p:UseSharedCompilation=false',`" : `"`" )
+                                        $( (${{ inputs.MvcBuildViews } -eq 'false') ? `"'/p:MvcBuildViews=true',`" : `"`" )
+                                        $( (${{ inputs.EmitCompilerGeneratedFiles } -eq 'false') ? `"'/p:EmitCompilerGeneratedFiles=true',`" : `"`" )
+                                    })
+
+                                }
+                            end
+                        end,
+                        table.unpack(_RegisteredMatchers['csharp'])
+                    }
+                }
+            end" > "${env:RUNNER_TEMP}\config.lua"
+    - name: Set Env Variable
+      shell: pwsh
+      run: | 
+        $env:CODEQL_ACTION_EXTRA_OPTIONS = "`"{`"database`":{`"init`":[`"--extra-tracing-config`", `"${env:RUNNER_TEMP}\config.lua`" ]}}"
+        Write-Host "var set `$env:CODEQL_ACTION_EXTRA_OPTIONS: $env:CODEQL_ACTION_EXTRA_OPTIONS"
+        Write-Host "config.lua contents:"
+        Get-Content "${env:RUNNER_TEMP}\config.lua"
+branding:
+  icon: "lock"
+  color: "gray-dark"
