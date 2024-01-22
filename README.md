@@ -1,5 +1,5 @@
 # codeql-tracer-netframework
-Generates a custom tracing configuration for ASP.NET to make MVCBuildViews and other compiler options conditional.  This action overrides the default lua tracing configuration for csharp found [here](https://github.com/github/codeql/blob/7e1dd38623f822046bda8e7d7652cb41f638d417/csharp/tools/tracing-config.lua#L149-L167).
+Generates a custom tracing configuration for ASP.NET to make MVCBuildViews and other compiler options conditional.  This action overrides the default lua tracing configuration for csharp found [here](https://github.com/github/codeql/blob/7e1dd38623f822046bda8e7d7652cb41f638d417/csharp/tools/tracing-config.lua#L149-L167) using the [--extra-tracing-config](https://docs.github.com/en/code-security/codeql-cli/codeql-cli-manual/database-init#--extra-tracing-configtracing-configlua) CodeQL option.
 
 > [!WARNING]
 >Overriding the default CodeQL Csharp Tracer configuration can increase the potential for false positives / false negatives in security analysis.
